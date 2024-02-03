@@ -2,11 +2,6 @@ pipeline {
 
     agent any
 
-    environment {
-        BRBIN = '/opt/homebrew/bin/'
-        ULBIN = '/usr/local/bin/'
-    }
-
     stages {
         stage('Checkout') {
             steps {
