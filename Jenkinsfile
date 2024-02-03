@@ -1,61 +1,45 @@
-def img
 pipeline {
-    environment {
-        registry = "ashishmj/python-jenkins" //To push an image to Docker Hub, you must first name your local image using your Docker Hub username and the repository name that you created through Docker Hub on the web.
-        registryCredential = 'DOCKERHUB'
-        githubCredential = 'GITHUB'
-        dockerImage = ''
-    }
+
     agent any
+
     stages {
-
-        stage('checkout') {
-                steps {
-                git branch: 'master',
-                credentialsId: githubCredential,
-                url: 'https://github.com/ashish-mj/Jenkins.git'
-                }
-        }
-
-        stage ('Test'){
-                steps {
-                sh "pytest testRoutes.py"
-                }
-        }
-
-        stage ('Clean Up'){
-            steps{
-                sh returnStatus: true, script: 'docker stop $(docker ps -a | grep ${JOB_NAME} | awk \'{print $1}\')'
-                sh returnStatus: true, script: 'docker rmi $(docker images | grep ${registry} | awk \'{print $3}\') --force' //this will delete all images
-                sh returnStatus: true, script: 'docker rm ${JOB_NAME}'
+        stage('Checkout') {
+            steps {
+                git branch: 'main', credentialsId: '9d2b9d98-759e-43b1-a298-20d04737cded', url: 'https://github.com/rupokify/python-jenkins-testone.git'
             }
         }
-
-        stage('Build Image') {
+        
+        stage('Prepare') {
+            steps {
+                sh '/opt/homebrew/bin/pip3 install -r requirements.txt'
+            }
+        }
+        
+        stage('Test') {
+            steps {
+                sh '/opt/homebrew/bin/pytest testRoutes.py'
+            }
+        }
+        
+        stage('Build') {
             steps {
                 script {
-                    img = registry + ":${env.BUILD_ID}"
-                    println ("${img}")
-                    dockerImage = docker.build("${img}")
+                    sh '/usr/local/bin/docker build -t rupokify/python-jenkins-testone .'
                 }
             }
         }
-
-        stage('Push To DockerHub') {
+        
+        stage('Deploy') {
             steps {
                 script {
-                    docker.withRegistry( 'https://registry.hub.docker.com ', registryCredential ) {
-                        dockerImage.push()
+                    withCredentials([usernamePassword(credentialsId: 'dockerhub', passwordVariable: 'dhpass', usernameVariable: 'dhuser')]) {
+                        sh '/usr/local/bin/docker login -u ${dhuser} -p ${dhpass}'
+                        sh '/usr/local/bin/docker push rupokify/python-jenkins-testone'
                     }
                 }
             }
         }
 
-        stage('Deploy') {
-           steps {
-                sh label: '', script: "docker run -d --name ${JOB_NAME} -p 5000:5000 ${img}"
-          }
-        }
-
-      }
     }
+    
+}
