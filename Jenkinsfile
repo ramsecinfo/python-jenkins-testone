@@ -21,6 +21,12 @@ pipeline {
             }
         }
         
+        stage('SAST') {
+            steps {
+                sh '/opt/homebrew/bin/safety check'
+            }
+        }
+
         stage('Build') {
             steps {
                 script {
