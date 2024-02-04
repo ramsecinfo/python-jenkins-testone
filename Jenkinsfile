@@ -11,26 +11,33 @@ pipeline {
 
         stage('Prepare') {
             steps {
-                sh '${BRBIN}pip3 install -r requirements.txt'
+                sh 'pip3 install -r requirements.txt'
             }
         }
 
-        stage('Test') {
+		stage('Test') {
             steps {
-                sh '${BRBIN}pytest testRoutes.py'
+                sh 'pytest testRoutes.py'
             }
         }
 
-        stage('SAST') {
+        stage('Safety SAST') {
             steps {
-                sh '${BRBIN}safety check'
+                sh 'safety check'
+            }
+        }
+
+        stage('OWASP Dependency SCA') {
+            steps {
+                dependencyCheck additionalArguments: '', odcInstallation: 'OWASP-Dependency-Scan'
+                dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
             }
         }
 
         stage('Build') {
             steps {
                 script {
-                    sh '${ULBIN}docker build -t rupokify/python-jenkins-testone .'
+                    sh 'docker build -t rupokify/python-jenkins-testone .'
                 }
             }
         }
@@ -39,9 +46,16 @@ pipeline {
             steps {
                 script {
                     withCredentials([usernamePassword(credentialsId: 'dockerhub', passwordVariable: 'dhpass', usernameVariable: 'dhuser')]) {
-                        sh '${ULBIN}docker login -u ${dhuser} -p ${dhpass}'
-                        sh '${ULBIN}docker push rupokify/python-jenkins-testone'
+                        sh 'docker login -u ${dhuser} -p ${dhpass}'
+                        sh 'docker push rupokify/python-jenkins-testone'
                     }
+                }
+            }
+        }
+		stage('Trivy DAST') {
+            steps {
+                script {
+                    sh 'trivy image rupokify/python-jenkins-testone:latest'
                 }
             }
         }
