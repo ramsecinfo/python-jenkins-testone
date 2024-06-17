@@ -37,16 +37,7 @@ pipeline {
             }
         }
 
-        stage('Deploy') {
-            steps {
-                script {
-                    withCredentials([usernamePassword(credentialsId: 'dockerhub', passwordVariable: 'dhpass', usernameVariable: 'dhuser')]) {
-                        sh 'docker login -u ${dhuser} -p ${dhpass}'
-                        
-                    }
-                }
-            }
-        }
+   
 		stage('Trivy DAST') {
             steps {
                 script {
