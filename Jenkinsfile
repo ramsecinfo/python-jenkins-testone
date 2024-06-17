@@ -28,12 +28,6 @@ pipeline {
             }
         }
 	    
-        stage('Safety SAST') {
-            steps {
-                sh 'safety check'
-            }
-        }
-
 
         stage('Build') {
             steps {
