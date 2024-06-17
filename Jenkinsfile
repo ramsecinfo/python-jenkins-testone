@@ -42,7 +42,7 @@ pipeline {
                 script {
                     withCredentials([usernamePassword(credentialsId: 'dockerhub', passwordVariable: 'dhpass', usernameVariable: 'dhuser')]) {
                         sh 'docker login -u ${dhuser} -p ${dhpass}'
-                        sh 'docker push rupokify/python-jenkins-testone'
+                        
                     }
                 }
             }
