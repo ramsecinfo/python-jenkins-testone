@@ -37,7 +37,18 @@ pipeline {
             }
         }
 
-   
+       stage('Deploy') {
+            steps {
+                // Deploy steps, if any (for example, pushing the Docker image to a registry)
+                script {
+                    sh '''
+                        # Example: Push Docker image to registry
+                        docker tag my-python-app my-registry/my-python-app:latest
+                        docker push my-registry/my-python-app:latest
+                    '''
+                }
+            }
+        }
 		stage('Trivy DAST') {
             steps {
                 script {
