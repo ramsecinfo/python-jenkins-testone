@@ -22,20 +22,6 @@ pipeline {
         }
 	    
         
- stages {
-        stage('Setup Environment') {
-            steps {
-                script {
-                    // Setup Python environment (e.g., creating virtualenv, installing dependencies)
-                    sh '''
-                    python -m venv venv
-                    source venv/bin/activate
-                    pip install -r requirements.txt
-                    pip install bandit
-                    '''
-                }
-            }
-        }
 
         stage('Static Code Analysis - SAST') {
             steps {
