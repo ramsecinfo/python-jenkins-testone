@@ -23,7 +23,6 @@ pipeline {
 	    stage('SAST') {
             steps {
                 sh 'safety check'
-		echo 'This will always run, regardless of success or failure.'
             }
         }
 
