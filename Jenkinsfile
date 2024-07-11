@@ -20,11 +20,16 @@ pipeline {
                 sh 'pytest testRoutes.py'
             }
         }
-	    stage('SAST') {
-            steps {
-                sh 'safety check'
-            }
-        }
+	    
+        stage ('SAST') {
+		steps {
+		withSonarQubeEnv('sonar') {
+			sh 'mvn sonar:sonar'
+			sh 'cat target/sonar/report-task.txt'
+		       }
+		}
+	}
+
 
         stage('OWASP SCA') {
             steps {
