@@ -21,11 +21,56 @@ pipeline {
             }
         }
 	    
-        stage('SAST') {
+        
+ stages {
+        stage('Setup Environment') {
             steps {
-                sh 'safety check'
+                script {
+                    // Setup Python environment (e.g., creating virtualenv, installing dependencies)
+                    sh '''
+                    python -m venv venv
+                    source venv/bin/activate
+                    pip install -r requirements.txt
+                    pip install bandit
+                    '''
+                }
             }
         }
+
+        stage('Static Code Analysis - SAST') {
+            steps {
+                script {
+                    // Run Bandit for SAST
+                    def banditResults = sh(script: 'bandit -r .', returnStatus: true)
+                    if (banditResults != 0) {
+                        currentBuild.result = 'UNSTABLE'
+                        error "SAST analysis failed. Please check the Bandit report."
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            script {
+                // Deactivate the virtual environment if needed
+                sh 'deactivate || true'
+            }
+        }
+
+        success {
+            echo 'Pipeline succeeded.'
+        }
+
+        unstable {
+            echo 'Pipeline is unstable due to SAST failures.'
+        }
+
+        failure {
+            echo 'Pipeline failed.'
+        }
+    }
 
         stage('OWASP SCA') {
             steps {
