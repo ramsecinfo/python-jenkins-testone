@@ -25,6 +25,9 @@ pipeline {
                 sh 'safety check'
             }
         }
+	      always {
+        echo 'This will always run, regardless of success or failure.'
+            }
 
         stage('OWASP SCA') {
             steps {
