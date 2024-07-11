@@ -20,6 +20,11 @@ pipeline {
                 sh 'pytest testRoutes.py'
             }
         }
+	    stage('SAST') {
+            steps {
+                sh 'safety check'
+            }
+        }
 
         stage('OWASP SCA') {
             steps {
